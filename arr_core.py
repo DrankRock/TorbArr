@@ -330,7 +330,7 @@ def render_dashboard(dash):
     with dash.lock:
         ll = dash._logs[-30:]
     lt = Text()
-    for l in ll:
+    for l in reversed(ll):
         st = "green" if "SUCCESS" in l else "red" if "ERROR" in l else "yellow" if "WARNING" in l else "default"
         lt.append(l + "\n", style=st)
     body["logs"].update(Panel(lt, title="Log"))
