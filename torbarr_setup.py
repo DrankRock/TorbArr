@@ -422,7 +422,7 @@ def main():
         print(f"  2. Test each config:")
         for path, cfg_type in generated:
             script = "radarr_auto.py" if cfg_type == "radarr" else "sonarr_auto.py"
-            print(f"     python3 {script} --config {path} --dry-run --max 3 --no-ui")
+            print(f"     python3 {script} --config {path} --dry-run --max 3")
         print(f"  3. Run for real:")
         for path, cfg_type in generated:
             script = "radarr_auto.py" if cfg_type == "radarr" else "sonarr_auto.py"

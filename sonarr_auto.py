@@ -597,6 +597,12 @@ def main():
     resolved_series = set()
     total = min(len(all_items), cfg.max_items) if cfg.max_items > 0 else len(all_items)
 
+    # Enforce --max by slicing the input list upfront
+    if cfg.max_items > 0:
+        all_items = all_items[:cfg.max_items]
+        allowed_sids = {i["series_id"] for i in all_items}
+        pass1 = [p for p in pass1 if p["series_id"] in allowed_sids]
+
     con.print(f"[bold]{len(all_items)}[/bold] seasons across [bold]{len(series_map)}[/bold] series")
     con.print(f"[dim]Pass 1: {len(pass1)} series for multi-season packs[/dim]")
 
