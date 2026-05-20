@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="torbarr.png" alt="Project Logo" width="400" />
+</div>
+
 # TorbArr
 
 Bulk downloader for Radarr/Sonarr using TorBox. Searches releases, checks TorBox cache, downloads, symlinks into your library. Handles 429 rate limits, retries, Discord notifications.
