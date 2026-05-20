@@ -9,19 +9,19 @@ Bulk downloader for Radarr/Sonarr using TorBox. Searches releases, checks TorBox
 ## tldr
 
 ```bash
-git clone https://github.com/YOURUSER/torbarr.git ~/torbarr
-cd ~/torbarr
+git clone https://github.com/DrankRock/TorbArr.git ./torbarr
+cd ./torbarr
 sudo apt install python3 python3-pip -y
 pip install requests rich pyyaml
 
-# auto-generate configs from your docker-compose
-python3 torbarr_setup.py --compose ~/docker/docker-compose.yml --torbox-key YOUR_KEY
+# auto-generate configs from your docker-compose (RECOMMENDED)
+python3 torbarr_setup.py --compose ~/docker/docker-compose.yml --torbox-key YOUR_TB_KEY --key radarr=YOUR_RADARR_KEY --key sonarr=YOUR_SONARR_KEY
 
 # or interactive setup (no compose needed)
 python3 torbarr_setup.py --interactive
 
 # test
-python3 radarr_auto.py --config radarr.json --dry-run --max 3 --no-ui
+python3 radarr_auto.py --config radarr.json --dry-run --max 3
 
 # run for real
 nohup python3 radarr_auto.py --config radarr.json --no-ui --force > /dev/null 2>&1 &
@@ -93,6 +93,13 @@ Sonarr also has `--series "name"` and `--packs-only`.
 **Everything skipped** → `--show-skip` to check, `--force` or `--clear-skip` to reset.
 
 **Files exist but arr doesn't see them** → rescan in the arr UI.
+
+## Found a bug ? 
+Do a bug report, or do a pull request.
+
+## RoadMap
+- Accept multiple torbox api keys for better rate limits
+- Usenet config
 
 ---
 
