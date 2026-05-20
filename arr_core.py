@@ -329,15 +329,9 @@ def render_dashboard(dash):
     body["threads"].update(Panel(tt, title="Threads"))
     with dash.lock:
         ll = dash._logs[-30:]
-    lines = []
-    for l in ll:
-        st = "green" if "SUCCESS" in l else "red" if "ERROR" in l else "yellow" if "WARNING" in l else "default"
-        lines.append((l, st))
-    # Pad with empty lines so content sticks to bottom
-    pad = max(0, 30 - len(lines))
     lt = Text()
-    lt.append("\n" * pad)
-    for l, st in lines:
+    for l in reversed(ll):
+        st = "green" if "SUCCESS" in l else "red" if "ERROR" in l else "yellow" if "WARNING" in l else "default"
         lt.append(l + "\n", style=st)
     body["logs"].update(Panel(lt, title="Log"))
     layout["body"].update(body)
