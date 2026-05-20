@@ -86,15 +86,22 @@ def build_path_map(volumes):
     return path_map
 
 
-def find_decypharr_mount(compose_data):
+def find_decypharr_mount(compose_data, compose_dir="."):
     """Try to detect the decypharr mount path from compose."""
     services = compose_data.get("services", {})
     for name, cfg in services.items():
         if "decypharr" in name.lower() or "blackhole" in (cfg.get("image") or "").lower():
             for v in cfg.get("volumes", []):
-                v = str(v).split(":")[0]
-                if "decypharr" in v.lower() or v.startswith("/mnt/"):
-                    return v
+                vs = str(v)
+                # Look for rshared mounts first (that's the FUSE mount)
+                if "rshared" in vs:
+                    host_part = vs.split(":")[0]
+                    return _resolve_path(host_part, compose_dir)
+            # Fallback: look for /mnt paths
+            for v in cfg.get("volumes", []):
+                host_part = str(v).split(":")[0]
+                if host_part.startswith("/mnt/"):
+                    return host_part
             # Check environment for mount path
             env = cfg.get("environment", {})
             if isinstance(env, list):
@@ -103,7 +110,18 @@ def find_decypharr_mount(compose_data):
                         val = str(e).split("=", 1)[-1]
                         if val.startswith("/"):
                             return val
+            elif isinstance(env, dict):
+                for k, val in env.items():
+                    if "MOUNT" in k.upper() and str(val).startswith("/"):
+                        return str(val)
     return "/mnt/decypharr"
+
+
+def _resolve_path(p, compose_dir):
+    """Resolve a path relative to the compose file directory."""
+    if p.startswith("/"):
+        return p
+    return os.path.abspath(os.path.join(compose_dir, p))
 
 
 def generate_config_name(service_name, arr_type):
@@ -168,7 +186,7 @@ def from_compose(compose_path, torbox_key, mount_override=None, discord_url="",
         print(f"No services found in {compose_path}")
         return []
 
-    mount = mount_override or find_decypharr_mount(compose)
+    mount = mount_override or find_decypharr_mount(compose, os.path.dirname(os.path.abspath(compose_path)))
     print(f"Decypharr mount: {mount}")
 
     detected = []
@@ -245,7 +263,7 @@ def from_compose(compose_path, torbox_key, mount_override=None, discord_url="",
         with open(out_path, "w") as f:
             json.dump(cfg, f, indent=2)
         print(f"    → Wrote {out_path}")
-        generated.append(out_path)
+        generated.append((out_path, d["type"]))
         print()
 
     return generated
@@ -309,11 +327,13 @@ def interactive(output_dir="."):
         with open(out_path, "w") as f:
             json.dump(cfg, f, indent=2)
         print(f"  → Wrote {out_path}")
-        generated.append(out_path)
+        generated.append((out_path, arr_type))
 
     if generated:
         print(f"\nDone. Generated {len(generated)} config(s).")
-        print(f"Test with: python3 radarr_auto.py --config {generated[0]} --dry-run --max 3 --no-ui")
+        for path, cfg_type in generated:
+            script = "radarr_auto.py" if cfg_type == "radarr" else "sonarr_auto.py"
+            print(f"Test: python3 {script} --config {path} --dry-run --max 3 --no-ui")
     else:
         print("No configs generated.")
 
@@ -399,8 +419,14 @@ def main():
         print(f"\nGenerated {len(generated)} config(s).")
         print("Next steps:")
         print(f"  1. Check the configs and fill in any REPLACE_ME API keys")
-        print(f"  2. Test: python3 radarr_auto.py --config {generated[0]} --dry-run --max 3 --no-ui")
-        print(f"  3. Run:  nohup python3 radarr_auto.py --config {generated[0]} --no-ui --force > /dev/null 2>&1 &")
+        print(f"  2. Test each config:")
+        for path, cfg_type in generated:
+            script = "radarr_auto.py" if cfg_type == "radarr" else "sonarr_auto.py"
+            print(f"     python3 {script} --config {path} --dry-run --max 3 --no-ui")
+        print(f"  3. Run for real:")
+        for path, cfg_type in generated:
+            script = "radarr_auto.py" if cfg_type == "radarr" else "sonarr_auto.py"
+            print(f"     nohup python3 {script} --config {path} --no-ui --force > /dev/null 2>&1 &")
 
 
 if __name__ == "__main__":
