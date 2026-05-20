@@ -1,0 +1,18 @@
+{
+  "sonarr_url": "http://localhost:8989",
+  "sonarr_api_key": "<redacted>",
+  "torbox_api_key": "<redacted>",
+  "min_score": 0,
+  "decypharr_mount": "/mnt/decypharr",
+  "path_map": {"/tv": "/mnt/media/tv", "/anime": "/mnt/media/anime"},
+  "threads": 2,
+  "poll_interval": 30,
+  "init_wait": 60,
+  "prefer_1080p": true,
+  "rate_limit_probe_interval": 300,
+  "torbox_max_slots": 3,
+  "discord_interval_minutes": 5,
+  "discord": {
+    "all": "<redacted>"
+  }
+}
